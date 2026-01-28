@@ -31,9 +31,8 @@ Testy obejmują zarówno ścieżki „happy”, jak i przypadki błędne: `Value
 
 Wszystkie testy używają in-memory/fake’ów zamiast realnych repozytoriów i zegara/ID:
 
-- `InMemoryUsers`, `InMemoryTasks`, `InMemoryEvents` — proste pamięciowe implementacje interfejsów repozytoriów.
-- `FakeIdGen` — deterministyczny generator (`id-1`, `id-2`, …).
-- `FakeClock` — deterministyczny czas; każde `now()` zwiększa się o sekundę (ułatwia porządkowanie zdarzeń po `timestamp`).
+- **Repozytoria**: używamy produkcyjnych implementacji in-memory z `src/repo/memory_repo.py` (`InMemoryUsers`, `InMemoryTasks`, `InMemoryEvents`).
+- **FakeClock** i **FakeIdGen** zostały przeniesione do `helper.py` i są dostępne jako część fabryki `make_service()`.
 
 Helper `tests/unit/serwis/helper.py` udostępnia fabrykę:
 
@@ -47,7 +46,7 @@ Dzięki temu każdy test startuje ze świeżym, hermetycznym stanem.
 
 ## Struktura katalogu
 
-- `fakes.py` — implementacje InMemory\*, FakeIdGen, FakeClock.
+- `fakes.py` — **(przeniesione)**: FakeClock i FakeIdGen są teraz w `helper.py`.
 - `helper.py` — make_service() budujący TaskService z fake’ami.
 - `test_create_assign.py` — tworzenie i przypisywanie zadań, przypadki zabronione, metadane ASSIGNED.
 - `test_status.py` — przejścia statusów, reguły uprawnień, błędne przejścia i nieznane statusy.
@@ -64,7 +63,7 @@ python3 -m pytest tests/unit/serwis -q
 
 # z pomiarem pokrycia (dla całego src/)
 
-python3 -m coverage run --source=src -m pytest tests/unit/serwis
+python3 -m coverage run --source=src -m pytest tests/unit
 python3 -m coverage report -m
 
 ---

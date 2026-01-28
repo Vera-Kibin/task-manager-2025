@@ -1,45 +1,55 @@
-# Repo — warstwa dostępu do danych (interfejsy)
+# Repo — warstwa dostępu do danych
 
-Ten moduł definiuje _interfejsy_ repozytoriów używane przez serwis domenowy (`TaskService`).
-Dzięki nim logika aplikacji jest niezależna od konkretnego magazynu danych
-(In-Memory, MongoDB, inne).
+Moduł definiuje **interfejsy** repozytoriów używane przez serwis domenowy (`TaskService`) oraz ich prostą implementację **in-memory** do pracy lokalnej i testów. Dzięki temu logika aplikacji jest niezależna od konkretnego magazynu danych (In-Memory, MongoDB, itp.).
 
-## Co tu jest
+---
 
-- `UsersRepository` — pobieranie i zapisywanie użytkowników.
-- `TasksRepository` — CRUD dla zadań (bez logiki filtrów).
-- `EventsRepository` — rejestr zdarzeń domenowych powiązanych z zadaniem.
+## Interfejsy (kontrakty)
+
+Plik: `src/repo/interface.py`
+
+- **`UsersRepository`** — pobieranie i zapisywanie użytkowników.
+  - `get(user_id: str) -> Optional[User]`
+  - `add(user: User) -> None`
+
+- **`TasksRepository`** — podstawowe operacje na zadaniach.
+  - `get(task_id: str) -> Optional[Task]`
+  - `list() -> List[Task]` — zwraca _wszystkie_ zadania (filtrowanie/widoczność realizuje serwis).
+  - `add(task: Task) -> None`
+  - `update(task: Task) -> None`
+
+- **`EventsRepository`** — rejestr zdarzeń domenowych.
+  - `add(event: TaskEvent) -> None`
+  - `list_for_task(task_id: str) -> list[TaskEvent]` — zwrot w porządku chronologicznym rosnącym (oczekiwany przez serwis).
 
 Interfejsy są synchroniczne i opisują **kontrakt** między serwisem a warstwą danych.
 
-## Kontrakty metod
+---
 
-### `UsersRepository`
+## Implementacja in-memory (dev/test)
 
-- `get(user_id: str) -> Optional[User]`  
-  Zwraca użytkownika lub `None`, gdy brak.
-- `add(user: User) -> None`  
-  Zapisuje (upsert po `user.id`). Brak wymogu rzucania wyjątku przy duplikacie.
+Plik: `src/repo/memory_repo.py`
 
-### `TasksRepository`
+- **`InMemoryUsers`**
+  - Słownik `id -> User`.
+  - `get` zwraca `None`, gdy brak; `add` to upsert po `user.id`.
 
-- `get(task_id: str) -> Optional[Task]`  
-  Zwraca zadanie lub `None`.
-- `list() -> List[Task]`  
-  Zwraca **wszystkie** zadania (w tym soft-deleted); filtrowanie i widoczność
-  to odpowiedzialność serwisu.
-- `add(task: Task) -> None`  
-  Upsert po `task.id`.
-- `update(task: Task) -> None`  
-  Nadpisuje istniejący stan zadania.
+- **`InMemoryTasks`**
+  - Słownik `id -> Task`.
+  - `list()` zwraca kopię wartości (lista), bez filtrowania i bez ukrywania soft-deleted — to robi serwis.
 
-### `EventsRepository`
+- **`InMemoryEvents`**
+  - Mapa `task_id -> [TaskEvent]`.
+  - `add` dopisuje na koniec; `list_for_task` zwraca wyłącznie zdarzenia danego zadania w kolejności dodania
+    (dla naszego serwisu ≈ kolejność czasowa; w repo produkcyjnym należy gwarantować sortowanie po `timestamp`).
 
-- `add(event: TaskEvent) -> None`  
-  Dodaje zdarzenie domenowe.
-- `list_for_task(task_id: str) -> list[TaskEvent]`  
-  Zwraca zdarzenia **dla danego zadania** w **porządku chronologicznym rosnącym**
-  (kontrakt oczekiwany przez serwis).
+**Uwagi implementacyjne**
+
+- Operacje mają złożoność ~O(1) na dostęp/aktualizację (tablice haszujące).
+- `update(task)` nie sprawdza istnienia — nadpisuje stan pod `task.id` (zgodnie z kontraktem).
+- Brak trwałości i współdzielenia między procesami; to implementacja do lokalnego dev/testów.
+
+---
 
 ## Jak używa tego serwis
 
