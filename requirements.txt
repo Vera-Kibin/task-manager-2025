@@ -1,0 +1,8 @@
+Flask==3.0.0
+pytest==8.4.2
+coverage==7.6.1
+requests==2.32.3
+pymongo==4.8.0
+pytest-mock==3.14.0
+Faker==30.8.2
+behave==1.2.6
