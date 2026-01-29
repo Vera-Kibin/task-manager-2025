@@ -1,3 +1,4 @@
+import os
 from flask import Flask, jsonify, request
 from werkzeug.exceptions import NotFound
 
@@ -8,7 +9,7 @@ from src.utils.clock import Clock
 from src.domain.user import User, Role, Status
 from src.domain.task import Task
 from src.domain.event import TaskEvent, EventType
-
+from src.repo.memory_repo import InMemoryUsers, InMemoryTasks, InMemoryEvents
 
 def _task_to_dict(t: Task) -> dict:
     return {
@@ -42,7 +43,19 @@ def _actor_id() -> str:
 def create_app() -> Flask:
     app = Flask(__name__)
 
-    users, tasks, events = InMemoryUsers(), InMemoryTasks(), InMemoryEvents()
+    storage = os.getenv("STORAGE", "memory").lower()
+    if storage == "mongo":
+        from src.repo.mongo_repo import MongoUsers, MongoTasks, MongoEvents
+        uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+        db  = os.getenv("MONGO_DB", "taskmgr")
+        users, tasks, events = (
+            MongoUsers(uri=uri, db_name=db),
+            MongoTasks(uri=uri, db_name=db),
+            MongoEvents(uri=uri, db_name=db),
+        )
+    else:
+        users, tasks, events = InMemoryUsers(), InMemoryTasks(), InMemoryEvents()
+
     svc = TaskService(users, tasks, events, IdGenerator(), Clock())
 
     users.add(User(id="m1", email="m@example.com", role=Role.MANAGER, status=Status.ACTIVE))
