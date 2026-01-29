@@ -61,3 +61,52 @@ python3 -m coverage report -m
 
 - Przy refaktorze implementacji in-memory,
 - Podczas dodania innego backendu (np. Mongo) – nowa implementacja musi spełniać te same kontrakty, w szczególności kolejność chronologiczną w `list_for_task`.
+
+---
+
+## Mongo — mapowania (bez I/O)
+
+Testy w `tests/unit/repo/test_mongo_mappings.py` weryfikują funkcje mapujące w `src/repo/mongo_repo.py` bez łączenia z MongoDB:
+
+- **User ⇄ dokument**: `_user_to_doc` / `_doc_to_user`.
+- **Task ⇄ dokument**: `_task_to_doc` / `_doc_to_task` (w tym pola opcjonalne i `is_deleted`).
+- **TaskEvent ⇄ dokument**: `_event_to_doc` / `_doc_to_event` (w tym domyślne `meta={}`).
+
+### Dlaczego
+
+Stabilność schematu zapisu/odczytu i zgodność enumów (`Role`, `Status`, `TaskStatus`, `Priority`) niezależnie od backendu.
+
+### Uruchomienie
+
+```bash
+python3 -m pytest tests/unit/repo/test_mongo_mappings.py -q
+```
+
+---
+
+## Mongo — implementacja (fakes)
+
+Testy w `tests/unit/repo/test_mongo_repo_units.py` weryfikują klasy `MongoUsers`, `MongoTasks`, `MongoEvents` bez prawdziwego MongoDB, używając fałszywego klienta i kolekcji:
+
+- **CRUD użytkowników/zadań**: `add`, `get`, `update`, `list`.
+- **Sortowanie zdarzeń**: `list_for_task` (po `timestamp`).
+- **Indeksy**: Tworzenie indeksu złożonego w `MongoEvents` (`create_index([("task_id", ASC), ("timestamp", ASC)])`).
+
+### Jak to działa
+
+- FakeMongoClient, FakeDB, FakeCollection, FakeCursor symulują zachowanie MongoDB.
+- Testy patchują `mongo_repo.MongoClient = FakeMongoClient` i ustawiają zmienne środowiskowe (`MONGO_URI`, `MONGO_DB`) dla ścieżki „domyślnej”.
+
+### Uruchomienie
+
+```bash
+python3 -m pytest tests/unit/repo/test_mongo_repo_units.py -q
+# albo cała paczka unitów repo:
+python3 -m pytest tests/unit/repo -q
+```
+
+---
+
+## Notka
+
+Obie grupy testów nie wymagają uruchomionej bazy ani Dockera. Testy API z Mongo są osobnym tematem i będą uruchamiane przez CI z docker-compose.
