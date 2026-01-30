@@ -52,7 +52,7 @@ Walidowane przez metodę `_is_valid_transition`.
   - Użytkownik: **nie** dla DONE/CANCELED; tylko owner lub assignee.
 - Walidacja: `title` (1..200) jeśli podany; `priority` poprawna.
 - Efekt: modyfikuje tylko przekazane pola; jeżeli są zmiany → `tasks.update` i `events.add(UPDATED, meta={"changes", "by"})`.
-- Idempotencja: brak zmian → zwraca oryginalny task (bez eventu).
+- Idempotencja: brak zmian -> zwraca oryginalny task (bez eventu).
 
 ### `delete_task(actor_id, task_id) -> Task`
 
@@ -77,32 +77,51 @@ Walidowane przez metodę `_is_valid_transition`.
 - Uprawnienia: Manager albo (owner/assignee) danego zadania.
 - Zwraca historię uporządkowaną repozytoryjnie (Mongo: indeks po `task_id,timestamp`).
 
-## Typowe wyjątki (do mapowania w HTTP)
+## Wysyłka historii zadania e-mailem (integracja zewnętrzna)
 
-- `ValueError` – np. „Invalid title”, „Unknown priority/status”, „Task/Actor not found”.
-- `PermissionError` – np. „User cannot assign…”, „Only owner can delete…”, „Cannot update…”.
+`email_task_history(actor_id, task_id, email) -> bool`
 
-## Dlaczego spełnia wymagania
+- **Cel**: Przygotowuje treść wiadomości e-mail z historią zdarzeń zadania i deleguje wysyłkę do warstwy integracji (`TaskHistoryEmailer` → `SMTPClient`).
+- **Wejście**:
+  - `actor_id` — kto żąda wysyłki,
+  - `task_id` — którego zadania dotyczy historia,
+  - `email` — adres odbiorcy; wymagany.
+- **Walidacje / wyjątki**:
+  - `ValueError("Missing email")` – gdy email pusty/brak.
+  - Uprawnienia i istnienie zadania sprawdza wewnętrznie `get_events(...)` (manager lub owner/assignee).
+  - Gdy zadanie nie istnieje po pobraniu zdarzeń → `werkzeug.exceptions.NotFound`.
+- **Działanie**:
+  1. `events = get_events(actor_id, task_id)` — autoryzacja + historia.
+  2. `task = tasks.get(task_id)` — tytuł do tematu/treści.
+  3. `event_types = [e.type.name for e in events]`.
+  4. `TaskHistoryEmailer().send_task_history(email, task.title, event_types) → bool`.
+- **Dlaczego tu**: Spełnia wymaganie „zewnętrzna funkcjonalność, którą można mockować w unit testach” – w testach patchujemy wywołanie SMTP, więc nie ma realnego I/O.
 
-- Logika warunkowa + walidacje w każdej operacji.
-- Rejestr historii (TaskEvent) dla audytu.
-- Izolacja zewnętrznych zależności (porty + `IdGenerator`/`Clock`) → łatwe mockowanie w unitach.
-- Spójne i idempotentne operacje (update/delete).
-
-## Przykład użycia (unit)
+### Przykład użycia (wewnątrz serwisu)
 
 ```python
-from src.serwis.task_service import TaskService
-from src.repo.memory_repo import InMemoryUsers, InMemoryTasks, InMemoryEvents
-from src.utils.idgen import IdGenerator
-from src.utils.clock import Clock
-from src.domain.user import User, Role, Status
-
-users, tasks, events = InMemoryUsers(), InMemoryTasks(), InMemoryEvents()
-svc = TaskService(users, tasks, events, IdGenerator(), Clock())
-
-users.add(User(id="m1", email="m@ex.com", role=Role.MANAGER, status=Status.ACTIVE))
-t = svc.create_task("m1", "Feature A", priority="HIGH")
-svc.assign_task("m1", t.id, "m1")
-svc.change_status("m1", t.id, "IN_PROGRESS")
+ok = svc.email_task_history(actor_id="u1", task_id="t123", email="owner@example.com")
+# ok == True/False (zależnie od SMTPClient.send)
 ```
+
+### Testy jednostkowe (gdzie szukać / co sprawdzają)
+
+- **`tests/unit/serwis/test_email_history.py`**:
+  - „Happy path” – poprawne wywołanie i delegacja do SMTP (mock).
+  - Brak e-maila -> `ValueError("Missing email")`.
+  - Brak zadania -> `werkzeug.exceptions.NotFound` (stub `get_events`, `tasks.get -> None`).
+- **`tests/unit/integrations/test_emailer.py`**:
+  - Patch `SMTPClient.send` i asercje argumentów (temat z datą, treść z tytułem i listą eventów).
+- **`tests/unit/integrations/test_smtp_stub.py`**:
+  - Stub SMTP zwraca `False` (bez I/O).
+
+### (Opcjonalnie) Endpoint HTTP
+
+Jeśli chcesz wystawić to w API:
+
+- **Route**: `POST /api/tasks/<task_id>/email-history`
+- **Body**: `{"email": "a@b.c"}`
+- **Nagłówek**: `X-Actor-Id: <actor_id>`
+- **Odpowiedź**: `200 {"sent": true}` lub odpowiedni błąd (`400` brak pola, `403` brak uprawnień, `404` brak zadania).
+
+W handlerze wystarczy wywołać `svc.email_task_history(actor_id, task_id, email)` i zamapować wyjątki (`ValueError→400`, `PermissionError→403`, `NotFound→404`).

@@ -73,3 +73,55 @@ python3 -m coverage report -m
 - Testy serwisu nie importują warstwy HTTP/API i nie dotykają bazy — są to stricte unit-testy z mockowanymi/fake zależnościami.
 - Dzięki deterministycznym FakeIdGen i FakeClock asercje na zdarzeniach (type, kolejność, metadane) są stabilne.
 - Dodając nową metodę serwisu, dopisz test korzystający z make_service() i — jeśli potrzeba — uzupełnij fake’i o brakujące zachowania.
+
+---
+
+## Nowe testy: e-mail historii + deterministyczne ID/czas
+
+1. **test_email_history.py**
+
+Testuje metodę serwisową `TaskService.email_task_history(actor_id, task_id, email)` bez realnego I/O:
+
+- **test_email_history_calls_smtp**  
+  Patchuje `src.integrations.emailer.SMTPClient.send` i sprawdza:
+  - że metoda została wywołana dokładnie raz,
+  - parametry: temat zawiera `Task History`, adres to podany e-mail,
+  - wynik `True` z mocka jest zwracany przez serwis.
+- **test_email_history_missing_email_raises**  
+  Pusta wartość e-mail → `ValueError("Missing email")`.
+- **test_email_history_raises_notfound_when_task_missing**  
+  Gdy `tasks.get(...)` zwróci `None` → `werkzeug.exceptions.NotFound`.  
+  (W teście `get_events` jest spatchowane, aby nie dotykać reszty logiki).
+
+Powiązane klasy/kod:  
+`src/serwis/task_service.py::email_task_history`,  
+`src/integrations/emailer.py`, `src/integrations/smtp.py`.
+
+Uwaga: to spełnia wymaganie „zewnętrzna funkcjonalność, którą można mockować” (SMTP).  
+W testach używamy `pytest-mock` do patchowania wywołania SMTP.
+
+2. **test_idgen_clock_mock.py**
+
+Stabilizuje identyfikatory i czas zdarzeń przez mocki:
+
+- **test_create_task_uses_mocked_id_and_clock**  
+  Patchuje:
+  - `src.utils.idgen.IdGenerator.new_id` → stały `"fixed-id-123"`,
+  - `src.utils.clock.Clock.now` → ustalona data/czas.  
+    Asercje: `Task.id` oraz `TaskEvent.CREATED.timestamp` dokładnie równe wartościom z mocków.
+- **test_status_change_event_uses_mocked_clock**  
+  Tworzy task przy stałym „teraz”, następnie patchuje kolejny „teraz” i sprawdza, że `STATUS_CHANGED.timestamp` to druga, spatchowana wartość.
+
+**Dlaczego:**  
+Deterministyczne wartości (ID/czas) dają powtarzalne testy i precyzyjne asercje na historii zdarzeń.
+
+---
+
+### Szybkie uruchomienie tylko tych plików
+
+```bash
+python3 -m pytest tests/unit/serwis/test_email_history.py -q
+python3 -m pytest tests/unit/serwis/test_idgen_clock_mock.py -q
+```
+
+**Wymagane:** `pytest`, `pytest-mock`.
