@@ -11,11 +11,31 @@ from src.domain.event import TaskEvent, EventType
 
 # --------- mapowania ---------
 def _user_to_doc(u: User) -> dict:
-    return {"_id": u.id, "email": u.email, "role": u.role.name, "status": u.status.name}
+    return {
+        "_id": u.id,
+        "email": u.email,
+        "role": u.role.name,
+        "status": u.status.name,
+        "first_name": u.first_name,
+        "last_name": u.last_name,
+        "nickname": u.nickname,
+    }
 
 def _doc_to_user(d: dict) -> User:
-    return User(id=d["_id"], email=d["email"], role=Role[d["role"]], status=Status[d["status"]])
+    first_name = (d.get("first_name") or "John").strip()
+    last_name  = (d.get("last_name") or "Doe").strip()
+    fallback_nick = f"user_{d.get('_id', 'x')}".replace("-", "_")[:32]
+    nickname = (d.get("nickname") or fallback_nick).strip()
 
+    return User(
+        id=d["_id"],
+        email=d["email"],
+        role=Role[d["role"]],
+        status=Status[d["status"]],
+        first_name=first_name,
+        last_name=last_name,
+        nickname=nickname,
+    )
 def _task_to_doc(t: "Task") -> dict:
     return {
         "_id": t.id,

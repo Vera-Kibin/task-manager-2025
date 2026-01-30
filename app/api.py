@@ -39,7 +39,6 @@ def _actor_id() -> str:
         raise ValueError("Missing X-Actor-Id header")
     return aid
 
-
 def create_app() -> Flask:
     app = Flask(__name__)
 
@@ -58,9 +57,12 @@ def create_app() -> Flask:
 
     svc = TaskService(users, tasks, events, IdGenerator(), Clock())
 
-    users.add(User(id="m1", email="m@example.com", role=Role.MANAGER, status=Status.ACTIVE))
-    users.add(User(id="u1", email="u1@example.com", role=Role.USER,    status=Status.ACTIVE))
-    users.add(User(id="u2", email="u2@example.com", role=Role.USER,    status=Status.ACTIVE))
+    users.add(User(id="m1", email="m@example.com", role=Role.MANAGER, status=Status.ACTIVE,
+                first_name="Manager", last_name="One", nickname="mm1"))
+    users.add(User(id="u1", email="u1@example.com", role=Role.USER, status=Status.ACTIVE,
+                first_name="User", last_name="One", nickname="uu1"))
+    users.add(User(id="u2", email="u2@example.com", role=Role.USER, status=Status.ACTIVE,
+                first_name="User", last_name="Two", nickname="uu2"))
 
     @app.route("/health", methods=["GET"])
     def health():
@@ -81,23 +83,29 @@ def create_app() -> Flask:
     # nie testuje: 
     @app.errorhandler(Exception)
     def _unexpected(e: Exception):
+        app.logger.exception("Unexpected error")
         return jsonify({"message": "Internal Server Error"}), 500
 
     # USERS
     @app.route("/api/users", methods=["POST"])
     def create_user():
-        data = request.get_json(force=True) or {}
-        try:
-            u = User(
-                id=data["id"],
-                email=data["email"],
-                role=Role[data.get("role", "USER").upper()],
-                status=Status[data.get("status", "ACTIVE").upper()],
-            )
-        except KeyError as ex:
-            raise ValueError(f"Missing field: {ex}")
-        users.add(u)
-        return jsonify({"message": "User created"}), 201
+        data = request.json
+        required_fields = ["id", "email", "role", "status", "first_name", "last_name", "nickname"]
+        for field in required_fields:
+            if field not in data:
+                return jsonify({"error": f"Missing field: '{field}'"}), 400
+
+        user = User(
+            id=data["id"],
+            email=data["email"],
+            role=Role[data["role"]],
+            status=Status[data["status"]],
+            first_name=data["first_name"],
+            last_name=data["last_name"],
+            nickname=data["nickname"],
+        )
+        users.add(user)
+        return jsonify({"id": user.id}), 201
 
     # TASKS
     @app.route("/api/tasks", methods=["POST"])

@@ -6,10 +6,10 @@ from src.domain.event import EventType
 class TestList:
     def test_list_tasks_user_sees_only_own_and_assigned(self):
         svc, users, *_ = make_service()
-        a = User(id="a", email="a@ex.com", role=Role.USER, status=Status.ACTIVE)
-        b = User(id="b", email="b@ex.com", role=Role.USER, status=Status.ACTIVE)
-        c = User(id="c", email="c@ex.com", role=Role.USER, status=Status.ACTIVE)
-        m = User(id="m", email="m@ex.com", role=Role.MANAGER, status=Status.ACTIVE)
+        a = User(id="a", email="a@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Alice", last_name="Anderson", nickname="alice_a")
+        b = User(id="b", email="b@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Bob", last_name="Brown", nickname="bob_b")
+        c = User(id="c", email="c@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Charlie", last_name="Clark", nickname="charlie_c")
+        m = User(id="m", email="m@ex.com", role=Role.MANAGER, status=Status.ACTIVE, first_name="Manager", last_name="Smith", nickname="manager_s")
         users.add(a); users.add(b); users.add(c); users.add(m)
 
         t1 = svc.create_task("a", "A1")
@@ -26,7 +26,7 @@ class TestList:
 
     def test_list_tasks_filters_work(self):
         svc, users, *_ = make_service()
-        u = User(id="u", email="u@ex.com", role=Role.USER, status=Status.ACTIVE)
+        u = User(id="u", email="u@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="User", last_name="Example", nickname="user_e")
         users.add(u)
 
         t1 = svc.create_task("u", "T1", priority="NORMAL")
@@ -41,14 +41,14 @@ class TestList:
 
     def test_list_tasks_unknown_status_filter_raises(self):
         svc, users, *_ = make_service()
-        users.add(User(id="u", email="u@ex.com", role=Role.USER, status=Status.ACTIVE))
+        users.add(User(id="u", email="u@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="User", last_name="Example", nickname="user_e"))
         with pytest.raises(ValueError) as e:
             svc.list_tasks("u", status="??")
         assert str(e.value) == "Unknown status filter"
 
     def test_list_tasks_unknown_priority_filter_raises(self):
         svc, users, *_ = make_service()
-        users.add(User(id="u", email="u@ex.com", role=Role.USER, status=Status.ACTIVE))
+        users.add(User(id="u", email="u@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="User", last_name="Example", nickname="user_e"))
         with pytest.raises(ValueError) as e:
             svc.list_tasks("u", priority="ULTRA")
         assert str(e.value) == "Unknown priority filter"
@@ -62,8 +62,8 @@ class TestList:
 class TestEvents:
     def test_get_events_forbidden_for_unrelated_user(self):
         svc, users, *_ = make_service()
-        owner = User(id="o1", email="o@ex.com", role=Role.USER, status=Status.ACTIVE)
-        other = User(id="x1", email="x@ex.com", role=Role.USER, status=Status.ACTIVE)
+        owner = User(id="o1", email="o@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Owner", last_name="Example", nickname="owner_e")
+        other = User(id="x1", email="x@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Other", last_name="Example", nickname="other_e")
         users.add(owner); users.add(other)
         t = svc.create_task("o1", "Secret")
         with pytest.raises(PermissionError):
@@ -71,8 +71,8 @@ class TestEvents:
 
     def test_get_events_history_contains_created_assigned_status_changes(self):
         svc, users, *_ = make_service()
-        m = User(id="m1", email="m@ex.com", role=Role.MANAGER, status=Status.ACTIVE)
-        d = User(id="d1", email="d@ex.com", role=Role.USER, status=Status.ACTIVE)
+        m = User(id="m1", email="m@ex.com", role=Role.MANAGER, status=Status.ACTIVE, first_name="Manager", last_name="Example", nickname="manager_e")
+        d = User(id="d1", email="d@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Developer", last_name="Example", nickname="developer_e")
         users.add(m); users.add(d)
         t = svc.create_task("m1", "Feature")
         svc.assign_task("m1", t.id, "d1")
@@ -85,7 +85,7 @@ class TestEvents:
 
     def test_get_events_actor_or_task_not_found(self):
         svc, users, *_ = make_service()
-        users.add(User(id="u", email="u@ex.com", role=Role.USER, status=Status.ACTIVE))
+        users.add(User(id="u", email="u@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="User", last_name="Example", nickname="user_e"))
         with pytest.raises(ValueError) as e1:
             svc.get_events("ghost", "nope")
         assert str(e1.value) == "Actor or task not found"

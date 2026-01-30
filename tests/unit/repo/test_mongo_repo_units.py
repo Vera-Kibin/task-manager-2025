@@ -89,7 +89,7 @@ def test_mongo_users_get_add_with_injected_collection():
 
     assert repo.get("u1") is None
 
-    u = User(id="u1", email="u1@ex.com", role=Role.USER, status=Status.ACTIVE)
+    u = User(id="u1", email="u1@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="John", last_name="Doe", nickname="john_doe")
     repo.add(u)
 
     out = repo.get("u1")
@@ -102,7 +102,7 @@ def test_mongo_users_default_ctor_uses_client_and_env(monkeypatch):
     monkeypatch.setattr(mr, "MongoClient", FakeMongoClient)
 
     repo = mr.MongoUsers()
-    u = User(id="ux", email="x@ex.com", role=Role.MANAGER, status=Status.ACTIVE)
+    u = User(id="ux", email="x@ex.com", role=Role.MANAGER, status=Status.ACTIVE, first_name="X", last_name="Y", nickname="xyz")
     repo.add(u)
     assert repo.get("ux").role == Role.MANAGER
 

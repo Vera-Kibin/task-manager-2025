@@ -12,10 +12,10 @@ def _new_id(prefix: str) -> str:
     return f"{prefix}-{uuid.uuid4().hex[:8]}"
 
 # -------- helpers: API --------
-def _create_user(user_id: str, role: str = "USER", status: str = "ACTIVE"):
+def _create_user(user_id: str, role: str = "USER", status: str = "ACTIVE", first_name: str = "John", last_name: str = "Doe", nickname: str = "john_doe"):
     r = requests.post(
         f"{BASE}/api/users",
-        json={"id": user_id, "email": f"{user_id}@ex.com", "role": role, "status": status},
+        json={"id": user_id, "email": f"{user_id}@ex.com", "role": role, "status": status, "first_name": first_name, "last_name": last_name, "nickname": nickname},
         timeout=5,
     )
     assert r.status_code == 201, r.text

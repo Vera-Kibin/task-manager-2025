@@ -17,7 +17,7 @@ def svc(repos):
 @pytest.fixture
 def owner(repos):
     users, *_ = repos
-    users.add(User(id="owner-1", email="o@ex.com", role=Role.USER, status=Status.ACTIVE))
+    users.add(User(id="owner-1", email="o@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Owner", last_name="One", nickname="owner_o"))
     return "owner-1"
 
 @pytest.fixture

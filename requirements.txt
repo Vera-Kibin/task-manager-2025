@@ -7,3 +7,4 @@ pytest-mock==3.14.0
 # Faker==30.8.2
 behave==1.2.6
 flake8==6.1.0
+regex>=2023.0

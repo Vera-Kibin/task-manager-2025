@@ -16,7 +16,7 @@ def _svc():
 
 def test_create_task_uses_mocked_id_and_clock(mocker: MockerFixture):
     users, tasks, events = _svc()
-    users.add(User(id="u1", email="u1@ex.com", role=Role.USER, status=Status.ACTIVE))
+    users.add(User(id="u1", email="u1@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="John", last_name="Doe", nickname="john_doe"))
 
     mocker.patch("src.utils.idgen.IdGenerator.new_id", return_value="fixed-id-123")
     fixed_now = datetime(2025, 1, 1, 12, 0, 0)
@@ -33,7 +33,7 @@ def test_create_task_uses_mocked_id_and_clock(mocker: MockerFixture):
 
 def test_status_change_event_uses_mocked_clock(mocker: MockerFixture):
     users, tasks, events = _svc()
-    users.add(User(id="u1", email="u1@ex.com", role=Role.USER, status=Status.ACTIVE))
+    users.add(User(id="u1", email="u1@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="John", last_name="Doe", nickname="john_doe"))
 
     mocker.patch("src.utils.idgen.IdGenerator.new_id", return_value="tid-1")
     mocker.patch("src.utils.clock.Clock.now", return_value=datetime(2025, 1, 1, 12, 0, 0))

@@ -6,7 +6,7 @@ from src.domain.event import EventType
 class TestCreate:
     def test_create_task_ok(self):
         svc, users, _, events = make_service()
-        users.add(User(id="u1", email="u1@example.com", role=Role.USER, status=Status.ACTIVE))
+        users.add(User(id="u1", email="u1@example.com", role=Role.USER, status=Status.ACTIVE, first_name="User", last_name="One", nickname="user_o"))
 
         t = svc.create_task(actor_id="u1", title="Zadanie A", description="opis", priority="NORMAL")
         assert t.title == "Zadanie A"
@@ -18,20 +18,20 @@ class TestCreate:
 
     def test_create_task_blocked_forbidden(self):
         svc, users, *_ = make_service()
-        users.add(User(id="u2", email="u2@example.com", role=Role.USER, status=Status.BLOCKED))
+        users.add(User(id="u2", email="u2@example.com", role=Role.USER, status=Status.BLOCKED, first_name="User", last_name="Two", nickname="user_t"))
         with pytest.raises(PermissionError):
             svc.create_task(actor_id="u2", title="Nie powinno się udać")
 
     def test_create_task_invalid_title_raises(self):
         svc, users, *_ = make_service()
-        users.add(User(id="u1", email="u1@ex.com", role=Role.USER, status=Status.ACTIVE))
+        users.add(User(id="u1", email="u1@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="User", last_name="One", nickname="user_o"))
         with pytest.raises(ValueError) as e:
             svc.create_task("u1", "")
         assert str(e.value) == "Invalid title"
 
     def test_create_task_unknown_priority_raises(self):
         svc, users, *_ = make_service()
-        users.add(User(id="u1", email="u1@ex.com", role=Role.USER, status=Status.ACTIVE))
+        users.add(User(id="u1", email="u1@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="User", last_name="One", nickname="user_o"))
         with pytest.raises(ValueError) as e:
             svc.create_task("u1", "T", priority="NOPE")
         assert str(e.value) == "Unknown priority"
@@ -45,8 +45,8 @@ class TestCreate:
 class TestAssign:
     def test_assign_task_ok_by_manager(self):
         svc, users, _, events = make_service()
-        mgr = User(id="m1", email="m@example.com", role=Role.MANAGER, status=Status.ACTIVE)
-        dev = User(id="d1", email="d@example.com", role=Role.USER,    status=Status.ACTIVE)
+        mgr = User(id="m1", email="m@example.com", role=Role.MANAGER, status=Status.ACTIVE, first_name="Manager", last_name="Smith", nickname="manager_s")
+        dev = User(id="d1", email="d@example.com", role=Role.USER, status=Status.ACTIVE, first_name="Developer", last_name="Jones", nickname="dev_j")
         users.add(mgr); users.add(dev)
         t = svc.create_task(actor_id="m1", title="Fix bug")
 
@@ -56,9 +56,9 @@ class TestAssign:
 
     def test_assign_task_forbidden_when_not_owner_nor_manager(self):
         svc, users, *_ = make_service()
-        owner = User(id="o1", email="o@example.com", role=Role.USER, status=Status.ACTIVE)
-        other = User(id="x1", email="x@example.com", role=Role.USER, status=Status.ACTIVE)
-        target= User(id="t1", email="t@example.com", role=Role.USER, status=Status.ACTIVE)
+        owner = User(id="o1", email="o@example.com", role=Role.USER, status=Status.ACTIVE, first_name="Owner", last_name="Example", nickname="owner_e")
+        other = User(id="x1", email="x@example.com", role=Role.USER, status=Status.ACTIVE, first_name="Other", last_name="Example", nickname="other_e")
+        target= User(id="t1", email="t@example.com", role=Role.USER, status=Status.ACTIVE, first_name="Target", last_name="Example", nickname="target_e")
         users.add(owner); users.add(other); users.add(target)
 
         t = svc.create_task(actor_id="o1", title="Sekretne zadanie")
@@ -67,15 +67,15 @@ class TestAssign:
 
     def test_assign_task_missing_task_raises(self):
         svc, users, *_ = make_service()
-        users.add(User(id="owner", email="o@ex.com", role=Role.USER, status=Status.ACTIVE))
-        users.add(User(id="assignee", email="a@ex.com", role=Role.USER, status=Status.ACTIVE))
+        users.add(User(id="owner", email="o@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Owner", last_name="Example", nickname="owner_e"))
+        users.add(User(id="assignee", email="a@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Assignee", last_name="Example", nickname="assignee_e"))
         with pytest.raises(ValueError) as e:
             svc.assign_task(actor_id="owner", task_id="no-such", assignee_id="assignee")
         assert str(e.value) == "Task not found"
 
     def test_assign_task_missing_actor_or_assignee_raises(self):
         svc, users, *_ = make_service()
-        users.add(User(id="owner", email="o@ex.com", role=Role.USER, status=Status.ACTIVE))
+        users.add(User(id="owner", email="o@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Owner", last_name="Example", nickname="owner_e"))
         t = svc.create_task("owner", "T")
         with pytest.raises(ValueError) as e:
             svc.assign_task(actor_id="ghost", task_id=t.id, assignee_id="nobody")
@@ -83,8 +83,8 @@ class TestAssign:
 
     def test_assign_task_blocked_assignee_forbidden(self):
         svc, users, *_ = make_service()
-        mgr = User(id="m", email="m@ex.com", role=Role.MANAGER, status=Status.ACTIVE)
-        blocked = User(id="d", email="d@ex.com", role=Role.USER, status=Status.BLOCKED)
+        mgr = User(id="m", email="m@ex.com", role=Role.MANAGER, status=Status.ACTIVE, first_name="Manager", last_name="Example", nickname="manager_e")
+        blocked = User(id="d", email="d@ex.com", role=Role.USER, status=Status.BLOCKED, first_name="Blocked", last_name="User", nickname="blocked_u")
         users.add(mgr); users.add(blocked)
         t = svc.create_task("m", "T")
         with pytest.raises(PermissionError) as e:
@@ -93,9 +93,9 @@ class TestAssign:
 
     def test_assign_task_event_meta_prev_on_reassign(self):
         svc, users, _, events = make_service()
-        m  = User(id="m",  email="m@ex.com", role=Role.MANAGER, status=Status.ACTIVE)
-        a1 = User(id="a1", email="a1@ex.com", role=Role.USER,    status=Status.ACTIVE)
-        a2 = User(id="a2", email="a2@ex.com", role=Role.USER,    status=Status.ACTIVE)
+        m  = User(id="m",  email="m@ex.com", role=Role.MANAGER, status=Status.ACTIVE, first_name="Manager", last_name="Example", nickname="manager_e")
+        a1 = User(id="a1", email="a1@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Assigneeone", last_name="Example", nickname="assignee_1")
+        a2 = User(id="a2", email="a2@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Assigneetwo", last_name="Example", nickname="assignee_2")
         users.add(m); users.add(a1); users.add(a2)
 
         t = svc.create_task("m", "R")
