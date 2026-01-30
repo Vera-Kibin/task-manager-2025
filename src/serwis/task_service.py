@@ -6,6 +6,7 @@ from src.domain.policies import PermissionPolicy
 from src.repo.interface import UsersRepository, TasksRepository, EventsRepository
 from src.utils.idgen import IdGenerator
 from src.utils.clock import Clock
+from src.integrations.emailer import TaskHistoryEmailer
 
 class TaskService:
     def __init__(self, users: UsersRepository, tasks: TasksRepository, events: EventsRepository, idgen: IdGenerator, clock: Clock):
@@ -246,3 +247,17 @@ class TaskService:
             raise PermissionError("User cannot view events of this task")
 
         return self.events.list_for_task(task_id)
+    
+    # -- mock email -- 
+
+    def email_task_history(self, actor_id: str, task_id: str, email: str) -> bool:
+        if not email:
+            raise ValueError("Missing email")
+        events = self.get_events(actor_id, task_id)
+        task = self.tasks.get(task_id)
+        if not task:
+            from werkzeug.exceptions import NotFound
+            raise NotFound()
+
+        event_types = [e.type.name for e in events]
+        return TaskHistoryEmailer().send_task_history(email, task.title, event_types)

@@ -54,6 +54,7 @@
   Miękkie usunięcie.
 - **`GET /api/tasks/{id}/events`**  
   Historia zdarzeń.
+- **`POST /api/tasks/{id}/email-history`**
 
 ---
 

@@ -165,6 +165,16 @@ def create_app() -> Flask:
         actor_id = _actor_id()
         evs = svc.get_events(actor_id, task_id)
         return jsonify([_event_to_dict(e) for e in evs]), 200
+    
+    @app.route("/api/tasks/<task_id>/email-history", methods=["POST"])
+    def email_history(task_id: str):
+        actor_id = _actor_id()
+        data = request.get_json(force=True) or {}
+        email = data.get("email")
+        if not email:
+            raise ValueError("Missing email")
+        _ = svc.email_task_history(actor_id, task_id, email)
+        return jsonify({"sent": True}), 200
 
     return app
 
