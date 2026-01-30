@@ -171,8 +171,10 @@ def create_app() -> Flask:
         actor_id = _actor_id()
         data = request.get_json(force=True) or {}
         email = data.get("email")
-        ok = svc.email_task_history(actor_id, task_id, email)
-        return jsonify({"sent": bool(ok)}), 200
+        if not email:
+            raise ValueError("Missing email")
+        _ = svc.email_task_history(actor_id, task_id, email)
+        return jsonify({"sent": True}), 200
 
     return app
 
