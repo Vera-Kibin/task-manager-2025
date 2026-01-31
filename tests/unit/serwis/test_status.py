@@ -7,8 +7,8 @@ from src.domain.event import EventType
 class TestStatus:
     def test_change_status_happy_path(self):
         svc, users, _, events = make_service()
-        mgr = User(id="m1", email="m@example.com", role=Role.MANAGER, status=Status.ACTIVE)
-        dev = User(id="d1", email="d1@example.com", role=Role.USER, status=Status.ACTIVE)
+        mgr = User(id="m1", email="m@example.com", role=Role.MANAGER, status=Status.ACTIVE, first_name="Manager", last_name="Smith", nickname="manager_s")
+        dev = User(id="d1", email="d1@example.com", role=Role.USER, status=Status.ACTIVE, first_name="Developer", last_name="Jones", nickname="dev_j")
         users.add(mgr); users.add(dev)
 
         t = svc.create_task("m1", "Implement feature")
@@ -25,8 +25,8 @@ class TestStatus:
 
     def test_change_status_forbidden_actor(self):
         svc, users, *_ = make_service()
-        owner = User(id="o1", email="o@example.com", role=Role.USER, status=Status.ACTIVE)
-        other = User(id="x1", email="x@example.com", role=Role.USER, status=Status.ACTIVE)
+        owner = User(id="o1", email="o@example.com", role=Role.USER, status=Status.ACTIVE, first_name="Owner", last_name="One", nickname="owner_o")
+        other = User(id="x1", email="x@example.com", role=Role.USER, status=Status.ACTIVE, first_name="Other", last_name="User", nickname="other_u")
         users.add(owner); users.add(other)
         t = svc.create_task("o1", "Task")
         with pytest.raises(PermissionError):
@@ -34,7 +34,7 @@ class TestStatus:
 
     def test_change_status_invalid_transition_raises(self):
         svc, users, *_ = make_service()
-        dev = User(id="d1", email="d@example.com", role=Role.USER, status=Status.ACTIVE)
+        dev = User(id="d1", email="d@example.com", role=Role.USER, status=Status.ACTIVE, first_name="Developer", last_name="Example", nickname="dev_e")
         users.add(dev)
         t = svc.create_task("d1", "Zadanie")
         with pytest.raises(ValueError):
@@ -42,14 +42,14 @@ class TestStatus:
 
     def test_change_status_missing_task_raises(self):
         svc, users, *_ = make_service()
-        users.add(User(id="u1", email="u1@ex.com", role=Role.USER, status=Status.ACTIVE))
+        users.add(User(id="u1", email="u1@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="User", last_name="Example", nickname="user_e"))
         with pytest.raises(ValueError) as e:
             svc.change_status("u1", "nope", "IN_PROGRESS")
         assert str(e.value) == "Task not found"
 
     def test_change_status_missing_actor_raises(self):
         svc, users, *_ = make_service()
-        users.add(User(id="owner", email="o@ex.com", role=Role.USER, status=Status.ACTIVE))
+        users.add(User(id="owner", email="o@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Owner", last_name="Example", nickname="owner_e"))
         t = svc.create_task("owner", "T")
         with pytest.raises(ValueError) as e:
             svc.change_status("ghost", t.id, "IN_PROGRESS")
@@ -57,7 +57,7 @@ class TestStatus:
 
     def test_change_status_unknown_status_raises(self):
         svc, users, *_ = make_service()
-        users.add(User(id="owner", email="o@ex.com", role=Role.USER, status=Status.ACTIVE))
+        users.add(User(id="owner", email="o@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Owner", last_name="Example", nickname="owner_e"))
         t = svc.create_task("owner", "T")
         with pytest.raises(ValueError) as e:
             svc.change_status("owner", t.id, "WHAT_IS_THIS")
@@ -65,8 +65,8 @@ class TestStatus:
 
     def test_change_status_done_forbidden_for_owner_not_assignee(self):
         svc, users, *_ = make_service()
-        owner = User(id="o1", email="o@ex.com", role=Role.USER, status=Status.ACTIVE)
-        assgn = User(id="a1", email="a@ex.com", role=Role.USER, status=Status.ACTIVE)
+        owner = User(id="o1", email="o@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Owner", last_name="Example", nickname="owner_e")
+        assgn = User(id="a1", email="a@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Assignee", last_name="Example", nickname="assignee_e")
         users.add(owner); users.add(assgn)
         t = svc.create_task("o1", "T")
         svc.assign_task("o1", t.id, "a1")
@@ -77,8 +77,8 @@ class TestStatus:
 
     def test_change_status_forbidden_when_actor_blocked_even_if_assignee(self):
         svc, users, *_ = make_service()
-        m = User(id="m1", email="m@ex.com", role=Role.MANAGER, status=Status.ACTIVE)
-        d = User(id="d1", email="d@ex.com", role=Role.USER, status=Status.ACTIVE)
+        m = User(id="m1", email="m@ex.com", role=Role.MANAGER, status=Status.ACTIVE, first_name="Manager", last_name="Example", nickname="manager_e")
+        d = User(id="d1", email="d@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Developer", last_name="Example", nickname="developer_e")
         users.add(m); users.add(d)
         t = svc.create_task("m1", "Feature")
         svc.assign_task("m1", t.id, "d1")
@@ -89,7 +89,7 @@ class TestStatus:
 
     def test_change_status_manager_can_cancel_anytime(self):
         svc, users, _, events = make_service()
-        m = User(id="m", email="m@ex.com", role=Role.MANAGER, status=Status.ACTIVE)
+        m = User(id="m", email="m@ex.com", role=Role.MANAGER, status=Status.ACTIVE, first_name="Manager", last_name="Example", nickname="manager_e")
         users.add(m)
         t = svc.create_task("m", "X")
         t = svc.change_status("m", t.id, "CANCELED")

@@ -18,8 +18,8 @@ def _assert_fast(resp: requests.Response, label: str):
     took = resp.elapsed.total_seconds()
     assert took < PERF_LIMIT, f"{label} took {took:.3f}s >= {PERF_LIMIT}s"
 
-def _create_user(user_id: str, role="USER", status="ACTIVE"):
-    r = requests.post(f"{BASE}/api/users",json={"id": user_id, "email": f"{user_id}@ex.com", "role": role, "status": status},timeout=5)
+def _create_user(user_id: str, role="USER", status="ACTIVE", first_name="John", last_name="Doe", nickname="john_doe"):
+    r = requests.post(f"{BASE}/api/users",json={"id": user_id, "email": f"{user_id}@ex.com", "role": role, "status": status, "first_name": first_name, "last_name": last_name, "nickname": nickname},timeout=5)
     assert r.status_code in (200, 201), r.text
     _assert_fast(r, f"create user {user_id}")
 

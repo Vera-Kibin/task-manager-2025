@@ -6,7 +6,7 @@ from src.domain.task import Task, TaskStatus
 class TestPermissionPolicy:
     @staticmethod
     def _u(id, role=Role.USER, status=Status.ACTIVE):
-        return User(id=id, email=f"{id}@ex.com", role=role, status=status)
+        return User(id=id, email=f"{id}@ex.com", role=role, status=status, first_name="First", last_name="Last", nickname=f"nick_{id}")
 
     @staticmethod
     def _t(owner="o"):

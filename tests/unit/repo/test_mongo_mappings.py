@@ -10,7 +10,7 @@ from src.repo import mongo_repo as mr
 
 
 def test_user_mapping_roundtrip():
-    u = User(id="u1", email="a@b.com", role=Role.MANAGER, status=Status.BLOCKED)
+    u = User(id="u1", email="a@b.com", role=Role.MANAGER, status=Status.BLOCKED, first_name="John", last_name="Doe", nickname="john_doe")
     doc = mr._user_to_doc(u)
     got = mr._doc_to_user(doc)
     assert got == u

@@ -6,7 +6,7 @@ from src.domain.event import EventType
 class TestUpdate:
     def test_update_task_ok_by_owner_changes_title_and_priority(self):
         svc, users, _, events = make_service()
-        owner = User(id="u1", email="u1@ex.com", role=Role.USER, status=Status.ACTIVE)
+        owner = User(id="u1", email="u1@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="John", last_name="Doe", nickname="john_doe")
         users.add(owner)
         t = svc.create_task("u1", "Old", "desc", "NORMAL")
 
@@ -17,8 +17,8 @@ class TestUpdate:
 
     def test_update_task_forbidden_when_done(self):
         svc, users, *_ = make_service()
-        owner = User(id="o1", email="o@ex.com", role=Role.USER, status=Status.ACTIVE)
-        assgn = User(id="a1", email="a@ex.com", role=Role.USER, status=Status.ACTIVE)
+        owner = User(id="o1", email="o@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Owner", last_name="One", nickname="owner_o")
+        assgn = User(id="a1", email="a@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Assignee", last_name="One", nickname="assignee_a")
         users.add(owner); users.add(assgn)
         t = svc.create_task("o1", "T")
         svc.assign_task("o1", t.id, "a1")
@@ -29,7 +29,7 @@ class TestUpdate:
 
     def test_update_task_actor_not_found_raises(self):
         svc, users, *_ = make_service()
-        owner = User(id="u1", email="u1@ex.com", role=Role.USER, status=Status.ACTIVE)
+        owner = User(id="u1", email="u1@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="John", last_name="Doe", nickname="john_doe")
         users.add(owner)
         t = svc.create_task("u1", "T")
         with pytest.raises(ValueError) as e:
@@ -38,7 +38,7 @@ class TestUpdate:
 
     def test_update_task_task_not_found_raises(self):
         svc, users, *_ = make_service()
-        owner = User(id="u1", email="u1@ex.com", role=Role.USER, status=Status.ACTIVE)
+        owner = User(id="u1", email="u1@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="John", last_name="Doe", nickname="john_doe")
         users.add(owner)
         with pytest.raises(ValueError) as e:
             svc.update_task("u1", "nope", title="X")
@@ -46,7 +46,7 @@ class TestUpdate:
 
     def test_update_task_invalid_title_raises(self):
         svc, users, *_ = make_service()
-        o = User(id="o", email="o@ex.com", role=Role.USER, status=Status.ACTIVE)
+        o = User(id="o", email="o@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Owner", last_name="Example", nickname="owner_e")
         users.add(o)
         t = svc.create_task("o", "Ok")
         with pytest.raises(ValueError) as e:
@@ -55,7 +55,7 @@ class TestUpdate:
 
     def test_update_task_unknown_priority_raises(self):
         svc, users, *_ = make_service()
-        o = User(id="o", email="o@ex.com", role=Role.USER, status=Status.ACTIVE)
+        o = User(id="o", email="o@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Owner", last_name="Example", nickname="owner_e")
         users.add(o)
         t = svc.create_task("o", "Ok")
         with pytest.raises(ValueError) as e:
@@ -64,19 +64,19 @@ class TestUpdate:
 
     def test_update_task_no_changes_no_event(self):
         svc, users, _, events = make_service()
-        o = User(id="o", email="o@ex.com", role=Role.USER, status=Status.ACTIVE)
+        o = User(id="o", email="o@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Owner", last_name="Example", nickname="owner_e")
         users.add(o)
         t = svc.create_task("o", "Ok", "d", "NORMAL")
         before = len(events.list_for_task(t.id))
-        t2 = svc.update_task("o", t.id)  # brak zmian
+        t2 = svc.update_task("o", t.id)
         after = len(events.list_for_task(t.id))
         assert t2.id == t.id
         assert before == after
 
     def test_update_task_forbidden_when_not_owner_nor_assignee(self):
         svc, users, *_ = make_service()
-        o = User(id="o", email="o@ex.com", role=Role.USER, status=Status.ACTIVE)
-        x = User(id="x", email="x@ex.com", role=Role.USER, status=Status.ACTIVE)
+        o = User(id="o", email="o@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Owner", last_name="Example", nickname="owner_e")
+        x = User(id="x", email="x@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="X", last_name="Example", nickname="x_e")
         users.add(o); users.add(x)
         t = svc.create_task("o", "Ok")
         with pytest.raises(PermissionError) as e:
@@ -85,8 +85,8 @@ class TestUpdate:
 
     def test_update_task_manager_can_update_done(self):
         svc, users, _, events = make_service()
-        m = User(id="m", email="m@ex.com", role=Role.MANAGER, status=Status.ACTIVE)
-        d = User(id="d", email="d@ex.com", role=Role.USER, status=Status.ACTIVE)
+        m = User(id="m", email="m@ex.com", role=Role.MANAGER, status=Status.ACTIVE, first_name="Manager", last_name="Example", nickname="manager_e")
+        d = User(id="d", email="d@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Developer", last_name="Example", nickname="developer_e")
         users.add(m); users.add(d)
         t = svc.create_task("m", "Ok")
         svc.assign_task("m", t.id, "d")
@@ -99,9 +99,9 @@ class TestUpdate:
 class TestDelete:
     def test_delete_task_owner_cannot_delete_done_but_manager_can(self):
         svc, users, _, events = make_service()
-        owner = User(id="o1", email="o@ex.com", role=Role.USER, status=Status.ACTIVE)
-        assgn = User(id="a1", email="a@ex.com", role=Role.USER, status=Status.ACTIVE)
-        mgr   = User(id="m1", email="m@ex.com", role=Role.MANAGER, status=Status.ACTIVE)
+        owner = User(id="o1", email="o@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Owner", last_name="One", nickname="owner_o")
+        assgn = User(id="a1", email="a@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Assignee", last_name="One", nickname="assignee_a")
+        mgr   = User(id="m1", email="m@ex.com", role=Role.MANAGER, status=Status.ACTIVE, first_name="Manager", last_name="One", nickname="manager_m")
         users.add(owner); users.add(assgn); users.add(mgr)
         t = svc.create_task("o1", "DelMe")
         svc.assign_task("o1", t.id, "a1")
@@ -117,7 +117,7 @@ class TestDelete:
 
     def test_delete_task_owner_can_delete_when_not_done(self):
         svc, users, _, events = make_service()
-        o = User(id="o", email="o@ex.com", role=Role.USER, status=Status.ACTIVE)
+        o = User(id="o", email="o@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Owner", last_name="Example", nickname="owner_e")
         users.add(o)
         t = svc.create_task("o", "Del")
         td = svc.delete_task("o", t.id)
@@ -126,7 +126,7 @@ class TestDelete:
 
     def test_delete_task_idempotent_no_second_event(self):
         svc, users, _, events = make_service()
-        m = User(id="m", email="m@ex.com", role=Role.MANAGER, status=Status.ACTIVE)
+        m = User(id="m", email="m@ex.com", role=Role.MANAGER, status=Status.ACTIVE, first_name="Manager", last_name="Example", nickname="manager_e")
         users.add(m)
         t = svc.create_task("m", "X")
 
@@ -139,8 +139,8 @@ class TestDelete:
 
     def test_delete_task_only_owner_can_delete(self):
         svc, users, *_ = make_service()
-        o = User(id="o", email="o@ex.com", role=Role.USER, status=Status.ACTIVE)
-        x = User(id="x", email="x@ex.com", role=Role.USER, status=Status.ACTIVE)
+        o = User(id="o", email="o@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Owner", last_name="Example", nickname="owner_e")
+        x = User(id="x", email="x@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="X", last_name="Example", nickname="x_e")
         users.add(o); users.add(x)
         t = svc.create_task("o", "Ok")
         with pytest.raises(PermissionError) as e:
@@ -149,7 +149,7 @@ class TestDelete:
 
     def test_delete_task_missing_actor_or_task_raises(self):
         svc, users, *_ = make_service()
-        o = User(id="o", email="o@ex.com", role=Role.USER, status=Status.ACTIVE)
+        o = User(id="o", email="o@ex.com", role=Role.USER, status=Status.ACTIVE, first_name="Owner", last_name="Example", nickname="owner_e")
         users.add(o)
         with pytest.raises(ValueError) as e:
             svc.delete_task("ghost", "nope")
