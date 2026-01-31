@@ -89,23 +89,28 @@ def create_app() -> Flask:
     # USERS
     @app.route("/api/users", methods=["POST"])
     def create_user():
-        data = request.json
-        required_fields = ["id", "email", "role", "status", "first_name", "last_name", "nickname"]
-        for field in required_fields:
+        data = request.get_json(silent=True) or {}
+        required = ["id", "email", "role", "status", "first_name", "last_name", "nickname"]
+        for field in required:
             if field not in data:
-                return jsonify({"error": f"Missing field: '{field}'"}), 400
+                return jsonify({"message": f"Missing field: '{field}'"}), 400
+        try:
+            user = User(
+                id=data["id"],
+                email=data["email"],
+                role=Role[data["role"]],
+                status=Status[data["status"]],
+                first_name=data["first_name"],
+                last_name=data["last_name"],
+                nickname=data["nickname"],
+            )
+        except KeyError as e:
+            return jsonify({"message": f"Invalid enum value: {e}"}), 400
+        except ValueError as e:
+            return jsonify({"message": str(e)}), 400
 
-        user = User(
-            id=data["id"],
-            email=data["email"],
-            role=Role[data["role"]],
-            status=Status[data["status"]],
-            first_name=data["first_name"],
-            last_name=data["last_name"],
-            nickname=data["nickname"],
-        )
         users.add(user)
-        return jsonify({"id": user.id}), 201
+        return jsonify({"message": "User created", "id": user.id}), 201
 
     # TASKS
     @app.route("/api/tasks", methods=["POST"])
