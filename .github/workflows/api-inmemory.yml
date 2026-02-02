@@ -6,11 +6,27 @@ name: Test api-inmemory
 on:
   push:
     branches: ["main"]
+    paths:
+      - "app/**"
+      - "src/**"
+      - "tests/api/**"
+      - "requirements.txt"
+      - ".github/workflows/test-api-inmemory.yml"
   pull_request:
     branches: ["main"]
+    paths:
+      - "app/**"
+      - "src/**"
+      - "tests/api/**"
+      - "requirements.txt"
+      - ".github/workflows/test-api-inmemory.yml"
 
 permissions:
   contents: read
+
+concurrency:
+  group: api-inmemory-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
