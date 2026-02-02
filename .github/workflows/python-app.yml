@@ -6,9 +6,11 @@ name: Python application
 on:
   push:
     branches: ["main"]
+    paths-ignore:
+      - "web/**"
   pull_request:
     branches: ["main"]
-      paths-ignore:
+    paths-ignore:
       - "web/**"
 
 permissions:
