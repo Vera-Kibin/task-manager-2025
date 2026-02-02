@@ -176,3 +176,18 @@ def test_mongo_events_default_ctor_creates_index(monkeypatch):
     repo = mr.MongoEvents()
     idx = repo._collection.indexes[0]
     assert [k for (k, _v) in idx] == ["task_id", "timestamp"]
+
+def test_mongo_users_find_by_email_and_nickname(monkeypatch):
+    from src.repo import mongo_repo as mr
+    monkeypatch.setattr(mr, "MongoClient", FakeMongoClient)
+    monkeypatch.setenv("MONGO_URI", "mongodb://x")
+    monkeypatch.setenv("MONGO_DB", "taskmgr")
+    repo = mr.MongoUsers()
+    repo._collection.insert_one({
+        "_id": "u1", "id": "u1", "email": "e@x.com",
+        "role": "USER", "status": "ACTIVE",
+        "first_name": "E", "last_name": "X", "nickname": "exx"
+    })
+
+    got = repo.find_by_email_and_nickname("e@x.com","exx")
+    assert got and got.id == "u1"

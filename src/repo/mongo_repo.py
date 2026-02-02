@@ -100,6 +100,10 @@ class MongoUsers(UsersRepository):
     def add(self, user: User) -> None:
         self._collection.replace_one({"_id": user.id}, _user_to_doc(user), upsert=True)
 
+    def find_by_email_and_nickname(self, email: str, nickname: str) -> Optional[User]:
+        d = self._collection.find_one({"email": email, "nickname": nickname})
+        return _doc_to_user(d) if d else None
+
 
 # --------- Tasks ---------
 class MongoTasks(TasksRepository):

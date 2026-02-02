@@ -11,6 +11,9 @@ from src.domain.task import Task
 from src.domain.event import TaskEvent, EventType
 from src.repo.memory_repo import InMemoryUsers, InMemoryTasks, InMemoryEvents
 
+from src.utils.idgen import IdGenerator
+idgen = IdGenerator()
+
 def _task_to_dict(t: Task) -> dict:
     return {
         "id": t.id,
@@ -188,6 +191,40 @@ def create_app() -> Flask:
             raise ValueError("Missing email")
         _ = svc.email_task_history(actor_id, task_id, email)
         return jsonify({"sent": True}), 200
+    
+    @app.route("/api/register", methods=["POST"])
+    def register():
+        data = request.json or {}
+        required = ["email", "first_name", "last_name", "nickname"]
+        for f in required:
+            if f not in data:
+                return jsonify({"message": f"Missing field: '{f}'"}), 400
+
+        uid = idgen.new_id()
+        user = User(
+            id=uid,
+            email=data["email"],
+            role=Role.USER,
+            status=Status.ACTIVE,
+            first_name=data["first_name"],
+            last_name=data["last_name"],
+            nickname=data["nickname"],
+        )
+        users.add(user)
+        return jsonify({"id": uid, "message": "User created"}), 201
+    
+    @app.route("/api/login", methods=["POST"])
+    def login():
+        data = request.get_json(silent=True) or {}
+        email = data.get("email"); nickname = data.get("nickname")
+        if not email or not nickname:
+            return jsonify({"message": "Missing email or nickname"}), 400
+
+        u = users.find_by_email_and_nickname(email, nickname)
+        if not u:
+            return jsonify({"message": "User not found"}), 404
+
+        return jsonify({"id": u.id, "role": u.role.name, "nickname": u.nickname}), 200
 
     return app
 
