@@ -8,6 +8,11 @@ class InMemoryUsers(UsersRepository):
     def __init__(self): self._data: Dict[str, User] = {}
     def get(self, user_id: str) -> Optional[User]: return self._data.get(user_id)
     def add(self, user: User) -> None: self._data[user.id] = user
+    def find_by_email_and_nickname(self, email: str, nickname: str) -> Optional[User]:
+        for u in self._data.values():
+            if u.email == email and u.nickname == nickname:
+                return u
+        return None
 
 class InMemoryTasks(TasksRepository):
     def __init__(self): self._data: Dict[str, Task] = {}

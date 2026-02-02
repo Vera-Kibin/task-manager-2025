@@ -1,19 +1,62 @@
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
+# ───── OS
+.DS_Store
+
+# ───── Logs
+logs/
+*.log
+
+# ───── Secrets / env
 .env
-.venv
+.env.*
+web/.env
+web/.env.*
+
+# ───── Python
+__pycache__/
+*.py[cod]
+*.pyd
+.venv/
 venv/
 ENV/
-.coverage
-htmlcov/
-# macOS
-.DS_Store
-# VSCode
-.vscode/
-# pytest
+dist/
+build/
+.eggs/
+*.egg-info/
 .pytest_cache/
-# docker
+.mypy_cache/
+.tox/
+.coverage
+coverage.xml
+htmlcov/
+
+# ───── Frontend (web/)
+web/node_modules/
+web/dist/
+web/dist-ssr/
+web/.vite/
+web/.turbo/
+web/.cache/
+web/.parcel-cache/
+web/.eslintcache
+web/coverage/
+web/playwright-report/
+web/test-results/
+web/npm-debug.log*
+web/yarn-debug.log*
+web/yarn-error.log*
+web/pnpm-debug.log*
+web/lerna-debug.log*
+web/*.local
+
+# ───── Docker / local data
 data/
+
+# ───── IDE / Editors
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
