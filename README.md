@@ -44,19 +44,19 @@ Poniżej znajdują się krótkie klipy wideo demonstrujące kluczowe funkcjonaln
 Wideo są hostowane w katalogu `docs/media` lub na GitHub Issues.
 
 1. **Rejestracja**  
-   <video src="docs/media/reg.mp4" width="900" controls></video>  
+   <video src="https://github.com/Vera-Kibin/task-manager-2025/issues/26#issue-3911766019" width="900" controls></video>  
    Wypełnienie formularza i przejście do widoku “PurrTasks”.
 
 2. **Utworzenie zadania**  
-   <video src="docs/media/task.mp4" width="900" controls></video>  
+   <video src="https://github.com/user-attachments/assets/b57303aa-541a-402c-aac5-666ab84581f3" width="900" controls></video>  
    Tytuł Feature 1 -> Create -> karta w NEW.
 
 3. **Edycja**  
-   <video src="docs/media/edit.mp4" width="900" controls></video>  
+   <video src="https://github.com/user-attachments/assets/6d0189a1-ef2e-4d35-9ce6-8ca4b45d5665" width="900" controls></video>  
    Edit -> zmiana tytułu -> Save.
 
 4. **Przepływ statusów, anulowanie i filtry/taby**  
-   <video src="docs/media/all.mp4" width="900" controls></video>  
+   <video src="https://github.com/user-attachments/assets/3a6cdded-6d82-4bb0-88c2-5f57ebacfd0e" width="900" controls></video>  
    Wideo przedstawia przepływ statusów (NEW -> IN PROGRESS -> DONE), anulowanie zadania (CANCELED) oraz użycie filtrów/tabów (NEW, IN PROGRESS, DONE, CANCELED, ALL).
 
 ---
