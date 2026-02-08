@@ -10,14 +10,14 @@ on:
       - "web/**"
       - "app/**"
       - "requirements.txt"
-      - ".github/workflows/ui-inmemory.yml"
+      - ".github/workflows/ui-mongo.yml"
   pull_request:
     branches: ["main"]
     paths:
       - "web/**"
       - "app/**"
       - "requirements.txt"
-      - ".github/workflows/ui-inmemory.yml"
+      - ".github/workflows/ui-mongo.yml"
 
 permissions:
   contents: read
