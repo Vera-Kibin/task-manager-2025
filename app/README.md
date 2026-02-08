@@ -26,7 +26,7 @@
   flask run # domyślnie port 5000
   ```
 - **Health-check**:  
-  `GET /health` → `{"status":"ok"}`.
+  `GET /health` -> `{"status":"ok"}`.
 
 ---
 

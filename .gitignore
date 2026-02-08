@@ -48,6 +48,14 @@ web/pnpm-debug.log*
 web/lerna-debug.log*
 web/*.local
 
+# Playwright
+web/test-results/
+web/playwright-report/
+web/blob-report/
+web/playwright/.cache/
+web/playwright/.auth/
+
+
 # ───── Docker / local data
 data/
 

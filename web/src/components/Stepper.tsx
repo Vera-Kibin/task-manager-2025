@@ -1,5 +1,3 @@
-import React from "react";
-
 type StepperProps<T extends string> = {
   values: readonly T[];
   value: T;
