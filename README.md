@@ -44,19 +44,19 @@ Poniżej znajdują się krótkie klipy wideo demonstrujące kluczowe funkcjonaln
 Wideo są hostowane w katalogu `docs/media` lub na GitHub Issues.
 
 1. **Rejestracja**  
-   <video src="docs/media/reg.mov" width="900" controls></video>  
+   <video src="docs/media/reg.mp4" width="900" controls></video>  
    Wypełnienie formularza i przejście do widoku “PurrTasks”.
 
 2. **Utworzenie zadania**  
-   <video src="docs/media/task.mov" width="900" controls></video>  
+   <video src="docs/media/task.mp4" width="900" controls></video>  
    Tytuł Feature 1 -> Create -> karta w NEW.
 
 3. **Edycja**  
-   <video src="docs/media/edit.mov" width="900" controls></video>  
+   <video src="docs/media/edit.mp4" width="900" controls></video>  
    Edit -> zmiana tytułu -> Save.
 
 4. **Przepływ statusów, anulowanie i filtry/taby**  
-   <video src="docs/media/all.mov" width="900" controls></video>  
+   <video src="docs/media/all.mp4" width="900" controls></video>  
    Wideo przedstawia przepływ statusów (NEW -> IN PROGRESS -> DONE), anulowanie zadania (CANCELED) oraz użycie filtrów/tabów (NEW, IN PROGRESS, DONE, CANCELED, ALL).
 
 ---
