@@ -44,7 +44,7 @@ Poniżej znajdują się krótkie klipy wideo demonstrujące kluczowe funkcjonaln
 Wideo są hostowane w katalogu `docs/media` lub na GitHub Issues.
 
 1. **Rejestracja**  
-   <video src="https://github.com/Vera-Kibin/task-manager-2025/issues/26#issue-3911766019" width="900" controls></video>  
+   <video src="https://github.com/user-attachments/assets/e805b91e-3623-4e15-a546-fed638d3b4aa" width="900" controls></video>  
    Wypełnienie formularza i przejście do widoku “PurrTasks”.
 
 2. **Utworzenie zadania**  
