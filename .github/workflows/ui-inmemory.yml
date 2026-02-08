@@ -10,14 +10,14 @@ on:
       - "web/**"
       - "app/**"
       - "requirements.txt"
-      - ".github/workflows/test-ui-inmemory.yml"
+      - ".github/workflows/ui-inmemory.yml"
   pull_request:
     branches: ["main"]
     paths:
       - "web/**"
       - "app/**"
       - "requirements.txt"
-      - ".github/workflows/test-ui-inmemory.yml"
+      - ".github/workflows/ui-inmemory.yml"
 
 permissions:
   contents: read
@@ -28,18 +28,15 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up Python 3.10
         uses: actions/setup-python@v3
         with:
           python-version: "3.10"
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install flake8 pytest requests Flask
+          pip install flake8 pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
@@ -47,13 +44,13 @@ jobs:
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-      - name: Start flask
+      - name: Start Flask API (in-memory)
         run: |
           export FLASK_APP="app.api:create_app"
           export FLASK_ENV=development
           export PYTHONPATH=$GITHUB_WORKSPACE
           flask run --host 127.0.0.1 --port 5000 &
-          sleep 5
+          sleep 3
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -72,12 +69,16 @@ jobs:
 
       - name: Start Vite dev server
         working-directory: web
+        env:
+          VITE_API_URL: http://127.0.0.1:5000
         run: |
-          npm run dev -- --port 5173 --strictPort &
-          npx -y wait-on http://127.0.0.1:5173
+          npm run dev -- --host 127.0.0.1 --port 5173 --strictPort &
+          npx -y wait-on tcp:127.0.0.1:5173
 
       - name: Run Playwright tests
         working-directory: web
+        env:
+          CI: true
         run: npx playwright test --reporter=line,html
 
       - name: Upload Playwright HTML report
