@@ -38,7 +38,32 @@ Aplikacja backendowa (Flask) do zarządzania zadaniami. Logika domenowa jest ods
 
 ---
 
-## 2. Struktura projektu
+## 2. Mini-demo (wideo)
+
+Poniżej znajdują się krótkie klipy wideo demonstrujące kluczowe funkcjonalności aplikacji.  
+Wideo są hostowane w katalogu `docs/media` lub na GitHub Issues.
+
+1. **Rejestracja**  
+   <video src="docs/media/reg.mov" width="900" controls></video>  
+   Wypełnienie formularza i przejście do widoku “PurrTasks”.
+
+2. **Utworzenie zadania**  
+   <video src="docs/media/task.mov" width="900" controls></video>  
+   Tytuł Feature 1 -> Create -> karta w NEW.
+
+3. **Edycja**  
+   <video src="docs/media/edit.mov" width="900" controls></video>  
+   Edit -> zmiana tytułu -> Save.
+
+4. **Przepływ statusów, anulowanie i filtry/taby**  
+   <video src="docs/media/all.mov" width="900" controls></video>  
+   Wideo przedstawia przepływ statusów (NEW -> IN PROGRESS -> DONE), anulowanie zadania (CANCELED) oraz użycie filtrów/tabów (NEW, IN PROGRESS, DONE, CANCELED, ALL).
+
+---
+
+## 3. Struktura projektu
+
+Projekt jest zorganizowany w następujące katalogi, z których każdy pełni określoną funkcję:
 
 ```
 app/
@@ -63,7 +88,7 @@ Szczegóły w README poszczególnych katalogów (`src/repo`, `tests/api`, `tests
 
 ---
 
-## 3. Szybki start lokalnie
+## 4. Szybki start lokalnie
 
 ### In-memory
 
@@ -88,9 +113,24 @@ export PYTHONPATH=$PWD
 python3 -m flask --app app.api:create_app run
 ```
 
+### Frontend (Vite)
+
+```bash
+cd web && npm ci
+
+# In-memory
+npm run dev -- --host 127.0.0.1 --port 5173
+
+# Mongo
+VITE_API_URL=http://127.0.0.1:5000 npm run dev -- --host 127.0.0.1 --port 5173
+
+# URL aplikacji
+http://127.0.0.1:5173
+```
+
 ---
 
-## 4. API (skrót)
+## 5. API (skrót)
 
 Wymagany nagłówek dla operacji na zadaniach: `X-Actor-Id: <user_id>`.
 
@@ -115,7 +155,7 @@ curl -H "X-Actor-Id: u1" -H "Content-Type: application/json" \
 
 ---
 
-## 5. Testy i pokrycie
+## 6. Testy i pokrycie
 
 ### Unit
 
@@ -150,30 +190,47 @@ python3 -m behave tests/bdd -q
 python3 -m pytest tests/perf -q
 ```
 
+### UI tests (Playwright)
+
+```bash
+cd web && npm ci && npx playwright install
+
+npx playwright test
+
+# Raport
+npx playwright show-report
+```
+
 ---
 
-## 6. CI (GitHub Actions)
+## 7. CI (GitHub Actions)
 
 Workflowi odpalane na `push`/`pull_request` na `main`.  
-Pliki w `.github/workflows/` (przykładowe nazwy):
+Pliki w `.github/workflows/`:
 
 - **`unit.yml`** — testy jednostkowe + coverage.
-- **`api-inmemory.yml` / `api-mongo.yml`** — testy API dla obu backendów.
+- **`api-inmemory.yml`** — API testy na in-memory.
+- **`api-mongo.yml`** — API testy na Mongo.
 - **`bdd-inmemory.yml` / `bdd-mongo.yml`** — scenariusze Behave.
-- **`perf-inmemory.yml` / `perf-mongo.yml`** — testy wydajności (limit czasu/iteracji konfigurowalne env).
+- **`perf-inmemory.yml` / `perf-mongo.yml`** — smoke perf.
+- **`ui-inmemory.yml`** — Vite + Playwright (in-memory).
+- **`ui-mongo.yml`** — Vite + Playwright (Mongo).
+
+UI-workflow buduje frontend, czeka na localhost:5173 i odpala Playwright, a raport jest publikowany jako artefakt.
 
 ---
 
-## 7. Architektura serwisu (skrót)
+## 8. Technologie użyte
 
-- **`TaskService`** łączy porty repozytoriów (`Users`/`Tasks`/`Events`) z politykami uprawnień.
-- **Eventy domenowe** zapewniają audyt zmian.
-- **Iniekcja zależności** (`IdGenerator`, `Clock`) umożliwia deterministyczne testy.
-- **Integracja SMTP** jest odseparowana w `src/integrations/` i mockowana w unitach.
+- **Backend:** Flask, Python 3.10+
+- **Frontend:** Vite, React, TypeScript
+- **Baza danych:** MongoDB (produkcyjna), in-memory (testowa)
+- **Testy:** Pytest, Behave, Playwright
+- **CI/CD:** GitHub Actions
 
 ---
 
-## 8. Dalsze prace
+## 9. Dalsze prace
 
 - **Frontend** (rejestracja użytkownika, UI zadań).
 - **Rozszerzenie modelu User** o imię/nazwisko (API stabilne; zmiana w repo/mapowaniach i testach).
@@ -181,14 +238,14 @@ Pliki w `.github/workflows/` (przykładowe nazwy):
 
 ---
 
-## 9. Wymagania wstępne
+## 10. Wymagania wstępne
 
 - **Python 3.10+**, `pip`, (opcjonalnie) Docker do MongoDB.
 - **Instalacja:** `pip install -r requirements.txt`.
 
 ---
 
-## Gałęzie robocze i przepływ PR
+## 11. Gałęzie robocze i przepływ PR
 
 Ocena dotyczy wyłącznie gałęzi `main`. Każda funkcjonalność powstaje w osobnej gałęzi -> PR -> merge do `main`. Poniżej konwencja oraz obecne gałęzie:
 
@@ -209,5 +266,7 @@ Ocena dotyczy wyłącznie gałęzi `main`. Każda funkcjonalność powstaje w os
 | `ci/bdd-mongo`        | Pipeline BDD (Mongo)                                   | `bdd-mongo`                               |
 | `ci/perf-inmemory`    | Pipeline performance (in-memory)                       | `perf-inmemory`                           |
 | `ci/perf-mongo`       | Pipeline performance (Mongo)                           | `perf-mongo`                              |
+| `ci/ui-inmemory`      | Pipeline UI (in-memory)                                | `ui-inmemory`                             |
+| `ci/ui-mongo`         | Pipeline UI (Mongo)                                    | `ui-mongo`                                |
 
 **Uwaga:** Workflowy są skonfigurowane na `on: push` do `main` oraz `on: pull_request -> main`.
