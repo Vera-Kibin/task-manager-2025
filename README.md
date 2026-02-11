@@ -1,107 +1,67 @@
+[![Unit](https://github.com/Vera-Kibin/task-manager-2025/actions/workflows/python-app.yml/badge.svg?branch=main)](https://github.com/Vera-Kibin/task-manager-2025/actions/workflows/python-app.yml)
+[![API (in-memory)](https://github.com/Vera-Kibin/task-manager-2025/actions/workflows/api-inmemory.yml/badge.svg?branch=main)](https://github.com/Vera-Kibin/task-manager-2025/actions/workflows/api-inmemory.yml)
+[![API (Mongo)](https://github.com/Vera-Kibin/task-manager-2025/actions/workflows/api-mongo.yml/badge.svg?branch=main)](https://github.com/Vera-Kibin/task-manager-2025/actions/workflows/api-mongo.yml)
+[![BDD (in-memory)](https://github.com/Vera-Kibin/task-manager-2025/actions/workflows/bdd-inmemory.yml/badge.svg?branch=main)](https://github.com/Vera-Kibin/task-manager-2025/actions/workflows/bdd-inmemory.yml)
+[![BDD (Mongo)](https://github.com/Vera-Kibin/task-manager-2025/actions/workflows/bdd-mongo.yml/badge.svg?branch=main)](https://github.com/Vera-Kibin/task-manager-2025/actions/workflows/bdd-mongo.yml)
+[![Perf (in-memory)](https://github.com/Vera-Kibin/task-manager-2025/actions/workflows/perf-inmemory.yml/badge.svg?branch=main)](https://github.com/Vera-Kibin/task-manager-2025/actions/workflows/perf-inmemory.yml)
+[![Perf (Mongo)](https://github.com/Vera-Kibin/task-manager-2025/actions/workflows/perf-mongo.yml/badge.svg?branch=main)](https://github.com/Vera-Kibin/task-manager-2025/actions/workflows/perf-mongo.yml)
+[![UI (in-memory)](https://github.com/Vera-Kibin/task-manager-2025/actions/workflows/ui-inmemory.yml/badge.svg?branch=main)](https://github.com/Vera-Kibin/task-manager-2025/actions/workflows/ui-inmemory.yml)
+[![UI (Mongo)](https://github.com/Vera-Kibin/task-manager-2025/actions/workflows/ui-mongo.yml/badge.svg?branch=main)](https://github.com/Vera-Kibin/task-manager-2025/actions/workflows/ui-mongo.yml)
+
 # Task Manager 2025
 
-**Autor:** Vera Kibin  
-**Grupa:** 2
-
-Aplikacja backendowa (Flask) do zarządzania zadaniami. Logika domenowa jest odseparowana od warstwy danych dzięki interfejsom repozytoriów. Dostępne są dwa backendy: in-memory (dev/test) i MongoDB (trwała). Do projektu dołączono pełny zestaw testów: unit, API, BDD oraz performance, a także komplet workflowów CI.
+Task Manager 2025 is a backend-driven task management application built with Flask and React. It features a clean separation of domain logic, repository interfaces, and integrations. The project supports both in-memory and MongoDB backends, and includes comprehensive tests (unit, API, BDD, performance, and UI).
 
 ---
 
-## 1. Co spełnia wymagania
+## Features
 
-### Funkcjonalności (≥6)
-
-- **Tworzenie zadań** z walidacją pól (`title`, `priority`).
-- **Przypisywanie zadań** z kontrolą uprawnień (`owner`/`manager`).
-- **Zmiany statusu** z dozwolonymi przejściami (`NEW -> IN_PROGRESS -> DONE/CANCELED`).
-- **Aktualizacja pól** (`tytuł`/`opis`/`priorytet`) z walidacją i ograniczeniami (np. brak zmian -> brak eventu).
-- **Miękkie usuwanie** (`is_deleted=True`) + idempotencja.
-- **Listowanie** z filtrami (`status`, `priority`) i widocznością per rola/relacja.
-- **Rejestr historii** (zdarzenia `CREATED`/`ASSIGNED`/`STATUS_CHANGED`/`UPDATED`/`DELETED`).
-- **Wysyłka historii e-mailem** (warstwa integracyjna, mockowana w unitach).
-
-### Klasy współpracujące (≥3)
-
-- **`TaskService`** (logika aplikacji),
-- **`UsersRepository` / `TasksRepository` / `EventsRepository`** (porty + implementacje in-memory/Mongo),
-- **Modele domenowe:** `User`, `Task`, `TaskEvent`, `PermissionPolicy`.
-
-### Funkcjonalność zależna od danych użytkownika
-
-- **Uprawnienia** wynikające z roli/statusu (`Role`, `Status`) oraz relacji do zadania (`owner`/`assignee`).
-
-### Zewnętrzna funkcjonalność (mockowana w unitach)
-
-- **SMTP:** `TaskHistoryEmailer` + `SMTPClient` (stub) — testy mockują `.send(...)`.
-- **Generatory/źródła czasu:** `IdGenerator.new_id()` i `Clock.now()` — mockowane w unitach.
-- **Zewnętrzna baza:** alternatywny backend MongoDB (w unitach weryfikowane mapowania + fakes).
+- Create tasks with field validation (`title`, `priority`).
+- Assign tasks with role-based permissions (`owner`/`manager`).
+- Update task fields (`title`, `description`, `priority`) with validation.
+- Transition task statuses (`NEW -> IN_PROGRESS -> DONE/CANCELED`).
+- Soft delete tasks (`is_deleted=True`) with idempotency.
+- List tasks with filters (`status`, `priority`) and role-based visibility.
+- View task history (`CREATED`, `ASSIGNED`, `STATUS_CHANGED`, `UPDATED`, `DELETED`).
+- Send task history via email (mocked SMTP in tests).
 
 ---
 
-## 2. Mini-demo (wideo)
+## Demo
 
-Poniżej znajdują się krótkie klipy wideo demonstrujące kluczowe funkcjonalności aplikacji.  
-Wideo są hostowane w katalogu `docs/media` lub na GitHub Issues.
+1. **Registration**  
+   <video src="https://github.com/user-attachments/assets/e805b91e-3623-4e15-a546-fed638d3b4aa" width="900" controls muted playsinline></video>
 
-1. **Rejestracja**  
-   <video src="https://github.com/user-attachments/assets/e805b91e-3623-4e15-a546-fed638d3b4aa" width="900" controls></video>  
-   Wypełnienie formularza i przejście do widoku “PurrTasks”.
+2. **Create Task**  
+   <video src="https://github.com/user-attachments/assets/b57303aa-541a-402c-aac5-666ab84581f3" width="900" controls muted playsinline></video>
 
-2. **Utworzenie zadania**  
-   <video src="https://github.com/user-attachments/assets/b57303aa-541a-402c-aac5-666ab84581f3" width="900" controls></video>  
-   Tytuł Feature 1 -> Create -> karta w NEW.
+3. **Edit Task**  
+   <video src="https://github.com/user-attachments/assets/6d0189a1-ef2e-4d35-9ce6-8ca4b45d5665" width="900" controls muted playsinline></video>
 
-3. **Edycja**  
-   <video src="https://github.com/user-attachments/assets/6d0189a1-ef2e-4d35-9ce6-8ca4b45d5665" width="900" controls></video>  
-   Edit -> zmiana tytułu -> Save.
-
-4. **Przepływ statusów, anulowanie i filtry/taby**  
-   <video src="https://github.com/user-attachments/assets/3a6cdded-6d82-4bb0-88c2-5f57ebacfd0e" width="900" controls></video>  
-   Wideo przedstawia przepływ statusów (NEW -> IN PROGRESS -> DONE), anulowanie zadania (CANCELED) oraz użycie filtrów/tabów (NEW, IN PROGRESS, DONE, CANCELED, ALL).
+4. **Status Flow & Filters**  
+   <video src="https://github.com/user-attachments/assets/3a6cdded-6d82-4bb0-88c2-5f57ebacfd0e" width="900" controls muted playsinline></video>
 
 ---
 
-## 3. Struktura projektu
+### Prerequisites
 
-Projekt jest zorganizowany w następujące katalogi, z których każdy pełni określoną funkcję:
+- Python 3.10+
+- Node.js 20+ and npm
+- Docker (only for MongoDB or running CI locally)
 
-```
-app/
-  api.py                # warstwa HTTP (Flask)
-src/
-  domain/              # modele domenowe + polityki uprawnień
-  serwis/              # TaskService (logika aplikacji)
-  repo/                # interfejsy + in-memory + Mongo
-  integrations/        # emailer + stub SMTP (mockowane w unitach)
-  utils/               # IdGenerator, Clock
-tests/
-  unit/                # testy jednostkowe (w tym integracje mockowane)
-  api/                 # testy API (black-box, HTTP)
-  bdd/                 # Behave: scenariusze Gherkin + kroki
-  perf/                # testy wydajnościowe (HTTP)
-.github/workflows/     # pipeline’y CI (unit/api/bdd/perf; in-memory i Mongo)
-mongo.yml              # docker-compose dla MongoDB
-requirements.txt
-```
+## Quickstart
 
-Szczegóły w README poszczególnych katalogów (`src/repo`, `tests/api`, `tests/bdd`, `tests/perf`, `src/integrations`, `tests/unit/...`).
-
----
-
-## 4. Szybki start lokalnie
-
-### In-memory
+### Backend (In-memory)
 
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
 export PYTHONPATH=$PWD
-export FLASK_APP="app.api:create_app"
-flask run # http://127.0.0.1:5000
+python3 -m flask --app app.api:create_app run  # http://127.0.0.1:5000
 ```
 
-### MongoDB
+### Backend (MongoDB)
 
 ```bash
 docker compose -f mongo.yml up -d
@@ -110,7 +70,7 @@ export MONGO_URI="mongodb://localhost:27017"
 export MONGO_DB="taskmgr"
 
 export PYTHONPATH=$PWD
-python3 -m flask --app app.api:create_app run
+python3 -m flask --app app.api:create_app run  # http://127.0.0.1:5000
 ```
 
 ### Frontend (Vite)
@@ -124,149 +84,86 @@ npm run dev -- --host 127.0.0.1 --port 5173
 # Mongo
 VITE_API_URL=http://127.0.0.1:5000 npm run dev -- --host 127.0.0.1 --port 5173
 
-# URL aplikacji
+# App URL
 http://127.0.0.1:5173
 ```
 
 ---
 
-## 5. API (skrót)
-
-Wymagany nagłówek dla operacji na zadaniach: `X-Actor-Id: <user_id>`.
-
-- **GET** `/health` -> `{ "status": "ok" }`
-- **POST** `/api/users` → body: `{id, email, role, status}` (201)
-- **POST** `/api/tasks` → `{title, description?, priority?}` (201)
-- **PATCH** `/api/tasks/<id>` → aktualizacja wybranych pól (200)
-- **DELETE** `/api/tasks/<id>` → miękki delete (200)
-- **GET** `/api/tasks` → lista z filtrami `status`, `priority` (200)
-- **POST** `/api/tasks/<id>/assign` → `{assignee_id}` (200)
-- **POST** `/api/tasks/<id>/status` → `{status}` (200)
-- **GET** `/api/tasks/<id>/events` → pełna historia (200)
-- **POST** `/api/tasks/<id>/email-history` → `{email}` → `{ "sent": true }` (200, bez realnego SMTP)
-
-**Przykład:**
-
-```bash
-curl -H "X-Actor-Id: u1" -H "Content-Type: application/json" \
- -d '{"title":"Feature X","priority":"HIGH"}' \
- http://127.0.0.1:5000/api/tasks
-```
-
----
-
-## 6. Testy i pokrycie
+## Tests
 
 ### Unit
 
 ```bash
 python3 -m pytest tests/unit -q
 python3 -m coverage run --source=src -m pytest tests/unit
-python3 -m coverage report -m # pokrycie 100%
+python3 -m coverage report -m
 ```
 
-- **Mocki:** `SMTPClient.send`, `IdGenerator.new_id`, `Clock.now`.
-- **Mongo:** testy mapowań + implementacji z „fakes” (bez prawdziwego serwera).
-
-### API (black-box)
+### API (Black-box)
 
 ```bash
-# serwer w drugim terminalu
 python3 -m pytest tests/api -q
 ```
 
 ### BDD (Behave)
 
 ```bash
-# serwer w drugim terminalu
 python3 -m behave tests/bdd -q
 ```
 
 ### Performance
 
 ```bash
-# serwer w drugim terminalu
-# zmienne dostrajalne: BASE_URL, PERF_LIMIT (sekundy), PERF_N
 python3 -m pytest tests/perf -q
 ```
 
-### UI tests (Playwright)
+### UI Tests (Playwright)
 
 ```bash
 cd web && npm ci && npx playwright install
-
 npx playwright test
-
-# Raport
 npx playwright show-report
 ```
 
 ---
 
-## 7. CI (GitHub Actions)
+## CI
 
-Workflowi odpalane na `push`/`pull_request` na `main`.  
-Pliki w `.github/workflows/`:
+The project includes GitHub Actions workflows for testing and CI/CD:
 
-- **`unit.yml`** — testy jednostkowe + coverage.
-- **`api-inmemory.yml`** — API testy na in-memory.
-- **`api-mongo.yml`** — API testy na Mongo.
-- **`bdd-inmemory.yml` / `bdd-mongo.yml`** — scenariusze Behave.
-- **`perf-inmemory.yml` / `perf-mongo.yml`** — smoke perf.
-- **`ui-inmemory.yml`** — Vite + Playwright (in-memory).
-- **`ui-mongo.yml`** — Vite + Playwright (Mongo).
-
-UI-workflow buduje frontend, czeka na localhost:5173 i odpala Playwright, a raport jest publikowany jako artefakt.
+- `python-app.yml` — Unit tests + coverage.
+- `api-inmemory.yml` / `api-mongo.yml` — API tests.
+- `bdd-inmemory.yml` / `bdd-mongo.yml` — BDD scenarios.
+- `perf-inmemory.yml` / `perf-mongo.yml` — Performance tests.
+- `ui-inmemory.yml` / `ui-mongo.yml` — Playwright UI tests.
 
 ---
 
-## 8. Technologie użyte
+## Tech Stack
 
-- **Backend:** Flask, Python 3.10+
-- **Frontend:** Vite, React, TypeScript
-- **Baza danych:** MongoDB (produkcyjna), in-memory (testowa)
-- **Testy:** Pytest, Behave, Playwright
+- **Backend:** Flask (Python 3.10+)
+- **Database:** MongoDB (prod), in-memory (test)
+- **Frontend:** React + TypeScript + Vite
+  - **Forms & Validation:** Formik, Yup
+  - **Styling:** Tailwind CSS
+- **Testing:** Pytest, Behave, Playwright
 - **CI/CD:** GitHub Actions
 
 ---
 
-## 9. Dalsze prace
+## Future Work
 
-- **Frontend** (rejestracja użytkownika, UI zadań).
-- **Rozszerzenie modelu User** o imię/nazwisko (API stabilne; zmiana w repo/mapowaniach i testach).
-- **E-mail:** realna implementacja SMTP (obecnie stub + mock w unitach).
+- Extend `User` model with first/last name.
+- Implement real SMTP for email notifications.
+- Add WebSocket updates for real-time task changes.
+- Introduce dark mode for the frontend.
+- Support task tags and attachments.
 
----
+## License & Attribution
 
-## 10. Wymagania wstępne
+- Code: [MIT](./LICENSE)
+- UI demo assets: short screen recordings by the author.
+- Cat GIF/video credit: source link https://i.gifer.com/Xjgr.gif (used for illustrative purposes).
 
-- **Python 3.10+**, `pip`, (opcjonalnie) Docker do MongoDB.
-- **Instalacja:** `pip install -r requirements.txt`.
-
----
-
-## 11. Gałęzie robocze i przepływ PR
-
-Ocena dotyczy wyłącznie gałęzi `main`. Każda funkcjonalność powstaje w osobnej gałęzi -> PR -> merge do `main`. Poniżej konwencja oraz obecne gałęzie:
-
-### Aktualne gałęzie
-
-| Gałąź                 | Cel / zakres                                           | Powiązane workflowy CI                    |
-| --------------------- | ------------------------------------------------------ | ----------------------------------------- |
-| `feature/domain-core` | Modele domeny i polityki uprawnień                     | `unit-coverage`                           |
-| `feature/api`         | Warstwa Flask (endpointy)                              | `api-inmemory`, `api-mongo`               |
-| `feature/mongo`       | Repozytoria Mongo + mapowania                          | `api-mongo`, `bdd-mongo`, `unit-coverage` |
-| `feature/bdd`         | Scenariusze Behave + kroki                             | `bdd-inmemory`, `bdd-mongo`               |
-| `feature/performance` | Testy wydajności                                       | `perf-inmemory`, `perf-mongo`             |
-| `feature/mock`        | Integracje zewnętrzne (SMTP/emailer) + unity z mockami | `unit-coverage`                           |
-| `ci/unit-coverage`    | Konfiguracja i tuning coverage                         | `unit-coverage`                           |
-| `ci/api-inmemory`     | Pipeline API (in-memory)                               | `api-inmemory`                            |
-| `ci/api-mongo`        | Pipeline API (Mongo)                                   | `api-mongo`                               |
-| `ci/bdd-inmemory`     | Pipeline BDD (in-memory)                               | `bdd-inmemory`                            |
-| `ci/bdd-mongo`        | Pipeline BDD (Mongo)                                   | `bdd-mongo`                               |
-| `ci/perf-inmemory`    | Pipeline performance (in-memory)                       | `perf-inmemory`                           |
-| `ci/perf-mongo`       | Pipeline performance (Mongo)                           | `perf-mongo`                              |
-| `ci/ui-inmemory`      | Pipeline UI (in-memory)                                | `ui-inmemory`                             |
-| `ci/ui-mongo`         | Pipeline UI (Mongo)                                    | `ui-mongo`                                |
-
-**Uwaga:** Workflowy są skonfigurowane na `on: push` do `main` oraz `on: pull_request -> main`.
+From NEW to DONE — one paw at a time. 🐾
